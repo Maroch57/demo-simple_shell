@@ -4,8 +4,12 @@
 int main(void)
 {
 	pid_t pid;
+	pid_t ppid;
 
-	printf("Before fork I was one\n");
+	/*written before fork was called */
+
+	/*called fork */
+	//printf("Before fork I was one\n");
 
 	pid = fork();
 
@@ -15,7 +19,16 @@ int main(void)
 		return 1;
 	}
 
-	printf("After fork I became two\n");
+	//printf("After fork I became two\n");
+
+	if (pid == 0)
+	{
+		sleep(40);
+		printf("I am the child\n");
+	}
+	else
+		ppid = getppid();
+		printf("Parent pid is: %u\n", ppid);
 
 	return (0);
 }
