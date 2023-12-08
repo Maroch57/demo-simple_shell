@@ -30,13 +30,13 @@ ssize_t bfer_inpt(pseuarg_ch *info, char **bffer, size_t *leng)
 				(*bffer)[r - 1] = '\0';
 				r--;
 			}
-			info->linecount_flag = 1;
+			info->cntline_flg = 1;
 			rm_comm(*bffer);
-			histlst_b(info, *bffer, info->histcount++);
+			histlst_b(info, *bffer, info->tellhist++);
 			/* if (_strchr(*buf, ';')) is this a command chain? */
 			{
 				*leng = w;
-				info->cmd_buf = bffer;
+				info->cdbuffer = bffer;
 			}
 		}
 	}
@@ -77,7 +77,7 @@ ssize_t inpt_gt(pseuarg_ch *info)
 		if (f >= leng) /* reached end of buffer? */
 		{
 			f = leng = 0; /* reset position and length */
-			info->cmd_buf_type = CMD_NORM;
+			info->cdbuffertype = CMD_NORM;
 		}
 
 		*bf_ptr = q; /* pass back pointer to current command position */
@@ -102,7 +102,7 @@ ssize_t rd_buf(pseuarg_ch *info, char *bffer, size_t *i)
 
 	if (*i)
 		return (0);
-	h = read(info->readfd, bffer, READ_BUF_SIZE);
+	h = read(info->READ_BUFFER_SIZE, bffer, READ_BUF_SIZE);
 	if (h >= 0)
 		*i = h;
 	return (h);
@@ -163,7 +163,7 @@ int get_delim(pseuarg_ch *info, char **ptrr, size_t *llength)
  */
 void sigintHandler(__attribute__((unused))int sig_nmber)
 {
-	_puts("\n");
-	_puts("$ ");
+	strngin("\n");
+	strngin("$ ");
 	_putchar(BUF_FLUSH);
 }
