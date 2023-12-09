@@ -60,10 +60,10 @@ void infree(pseuarg_ch *info, int fldall)
 			free(info->arg);
 		if (info->exvar)
 			freelst(&(info->exvar));
-		if (info->history)
-			freelst(&(info->history));
-		if (info->alias)
-			freelst(&(info->alias));
+		if (info->hst)
+			freelst(&(info->hst));
+		if (info->fake)
+			freelst(&(info->fake));
 		dmfree(info->environ);
 			info->environ = NULL;
 		mem_free((void **)info->cdbuffer);
