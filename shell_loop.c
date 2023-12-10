@@ -54,91 +54,91 @@ int shellmain(pseuarg_ch *info, char **arv)
  */
 int go_emb(info_t *info)
 {
-	int i, built_in_ret = -1;
+	int g, built_in_ret = -1;
 	builtin_table builtintbl[] = {
-		{"exit", _myexit},
-		{"env", _myenv},
-		{"help", _myhelp},
-		{"history", _myhistory},
-		{"setenv", _mysetenv},
-		{"unsetenv", _myunsetenv},
-		{"cd", _mycd},
-		{"alias", _myalias},
+		{"exit", exist_sts},
+		{"env", exvar},
+		{"help", help_inf},
+		{"history", hist_rep},
+		{"setenv", good_env},
+		{"unsetenv", bad_env},
+		{"cd", cd_mine},
+		{"alias", alum_hist},
 		{NULL, NULL}
 	};
 
-	for (i = 0; builtintbl[i].type; i++)
-		if (_strcmp(info->argv[0], builtintbl[i].type) == 0)
+	for (g = 0; builtintbl[g].type; g++)
+		if (strn_cmp(info->argv[0], builtintbl[i].type) == 0)
 		{
-			info->line_count++;
-			built_in_ret = builtintbl[i].func(info);
+			info->cnterr++;
+			built_in_ret = builtintbl[g].func(info);
 			break;
 		}
 	return (built_in_ret);
 }
 
 /**
- * find_cmd - finds a command in PATH
- * @info: the parameter & return info struct
+ * loc_comm - responsible for finding a command in a certain path.
+ * @info: struct param in subject.
  *
- * Return: void
+ * Return: NULL.
  */
-void find_cmd(info_t *info)
+void loc_comm(pseuarg_ch *info)
 {
-	char *path = NULL;
-	int i, k;
+	char *pth = NULL;
+	int l, m;
 
-	info->path = info->argv[0];
-	if (info->linecount_flag == 1)
+	info->pth = info->argv[0];
+	if (info->cntline_flg == 1)
 	{
-		info->line_count++;
-		info->linecount_flag = 0;
+		info->cnterr++;
+		info->cntline_flg = 0;
 	}
-	for (i = 0, k = 0; info->arg[i]; i++)
-		if (!is_delim(info->arg[i], " \t\n"))
-			k++;
-	if (!k)
+	for (l = 0, m = 0; info->arg[l]; l++)
+		if (!prser(info->arg[l], " \t\n"))
+			m++;
+	if (!m)
 		return;
 
-	path = find_path(info, _getenv(info, "PATH="), info->argv[0]);
-	if (path)
+	pth = locpath(info, pop_env(info, "PATH="), info->argv[0]);
+	if (pth)
 	{
-		info->path = path;
-		fork_cmd(info);
+		info->pth = pth;
+		loc_fork(info);
 	}
 	else
 	{
-		if ((actv_int(info) || _getenv(info, "PATH=")
-			|| info->argv[0][0] == '/') && is_cmd(info, info->argv[0]))
-			fork_cmd(info);
+		if ((actv_int(info) || pop_env(info, "PATH=")
+			|| info->argv[0][0] == '/') && cmd_prt(info, info->argv[0]))
+			loc_fork(info);
 		else if (*(info->arg) != '\n')
 		{
 			info->status = 127;
-			print_error(info, "not found\n");
+			errorprnt(info, "not found\n");
 		}
 	}
 }
 
 /**
- * fork_cmd - forks a an exec thread to run cmd
- * @info: the parameter & return info struct
+ * loc_fork - enables forking of an executable thread.
+ * @info: struct param in subject.
  *
- * Return: void
+ * Return: void.
  */
-void fork_cmd(info_t *info)
+void loc_fork(pseuarg_ch *info)
 {
-	pid_t child_pid;
+	pid_t chld_pid;
 
-	child_pid = fork();
-	if (child_pid == -1)
+	chld_pid = fork();
+	if (chld_pid == -1)
 	{
 		/* TODO: PUT ERROR FUNCTION */
 		perror("Error:");
 		return;
 	}
-	if (child_pid == 0)
+	if (chld_pid == 0)
 	{
-		if (execve(info->path, info->argv, get_environ(info)) == -1)
+		if (execve(info->path, info->argv, aqrenv(info)) == -1)
 		{
 			infree(info, 1);
 			if (errno == EACCES)
@@ -154,7 +154,7 @@ void fork_cmd(info_t *info)
 		{
 			info->status = WEXITSTATUS(info->status);
 			if (info->status == 126)
-				print_error(info, "Permission denied\n");
+				errorprnt(info, "Permission denied\n");
 		}
 	}
 }
